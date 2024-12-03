@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-backup-config
+  namespace: default
+data:
+  mysql-host: ""
+  mysql-database: ""
+  s3-bucket: ""
+  s3-region: ""
+  smtp-server: ""
+  smtp-port: "587"
+  smtp-sender: ""
+  smtp-recipient: ""

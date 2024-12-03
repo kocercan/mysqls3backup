@@ -1,0 +1,101 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup-cronjob
+  namespace: default  # Specify the appropriate namespace
+spec:
+  schedule: "0 2 * * *"  # Run at 2 AM every day
+  #schedule: "*/5 * * * *" #every 10 min for test
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2  # Number of retries before considering the job failed
+      template:
+        spec:
+          containers:
+          - name: mysql-backup
+            image: ercan412/mysqls3backup:latest
+            imagePullPolicy: Always
+            env:
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: mysql-host
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: mysql-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: mysql-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: mysql-database
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: aws-secret-access-key
+            - name: AWS_S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: s3-bucket
+            - name: AWS_S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: s3-region
+                  optional: true
+            - name: SMTP_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: smtp-server
+            - name: SMTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: smtp-port
+                  optional: true
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: smtp-user
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-backup-secrets
+                  key: smtp-password
+            - name: SMTP_SENDER
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: smtp-sender
+            - name: SMTP_RECIPIENT
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-backup-config
+                  key: smtp-recipient
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+          restartPolicy: OnFailure
+          # Optional: Add nodeSelector, affinity, or tolerations if needed
