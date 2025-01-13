@@ -56,7 +56,7 @@ try:
         'mysqldump',
         f'--host={MYSQL_HOST}',
         f'--user={MYSQL_USER}',
-        f'--password={MYSQL_PASSWORD}',
+        f'--password={MYSQL_PASSWORD} --routines --triggers --databases --default-character-set=utf8mb4 --skip-add-locks --lock-tables=false --events',
         MYSQL_DATABASE,
         f'--result-file={backup_file}'
     ], check=True, capture_output=True)
