@@ -10,7 +10,14 @@ import logging
 # Generate a timestamp for the backup file
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 # Set up logging
-logging.basicConfig(filename='backup_{timestamp}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(f'backup_{timestamp}.log'),
+        logging.StreamHandler()  # Log to standard output
+    ]
+)
 
 # Environment variables
 MYSQL_HOST = os.getenv('MYSQL_HOST')
@@ -56,7 +63,14 @@ try:
         'mysqldump',
         f'--host={MYSQL_HOST}',
         f'--user={MYSQL_USER}',
-        f'--password={MYSQL_PASSWORD} --routines --triggers --databases --default-character-set=utf8mb4 --skip-add-locks --lock-tables=false --events',
+        f'--password={MYSQL_PASSWORD}',
+        '--routines',
+        '--triggers',
+        '--databases',
+        '--default-character-set=utf8mb4',
+        '--skip-add-locks',
+        '--lock-tables=false',
+        '--events',
         MYSQL_DATABASE,
         f'--result-file={backup_file}'
     ], check=True, capture_output=True)
